@@ -23,7 +23,7 @@ public class GenaralController {
     }
 
 
-    @RequestMapping("create-user")
+    @RequestMapping("sign-up")
     public BasicResponse addUser (String username, String password) {
         if (username != null && !username.isEmpty()) {
             if (password != null && !password.isEmpty()) {
