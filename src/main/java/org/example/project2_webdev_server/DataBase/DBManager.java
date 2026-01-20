@@ -7,11 +7,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// צריך ליצור סכמה עם שם מתאים וטבלת יוזרים שתגיל את העמודות:
-// id - int auto incremented (pk)
-// username - varchar(50) (unique key)
-// password - varchar(50)
-
 @Component
 public class DBManager {
     private static final String URL = "jdbc:mysql://localhost:3306/project2";   // אנה שימי לב! כשנגדיר את הדאטה בייס זה יהיה עם הפרטים האלה וחייב לקרוא לסכמה "project2"
@@ -43,17 +38,17 @@ public class DBManager {
         }
     }
 
-    public User getUser (String username, String password) { // כרגע לא בשימוש
+    public User getUserByUsername (String username, String password) { // שיניתי שיהיה לפי שם משתמש ולא id - יותר פשוט. בשימוש בדשבורד קונטרולר
         try {
             PreparedStatement preparedStatement = this.connection
-                    .prepareStatement("SELECT id " +
+                    .prepareStatement("SELECT username " +
                             "FROM users " +
                             "WHERE username = ?");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 User user = new User();
-                user.setId(resultSet.getInt(1));
+                user.setUsername(resultSet.getString(1));
                 return user;
             }
         } catch (SQLException e) {
@@ -100,47 +95,6 @@ public class DBManager {
     }
 
 
-    /*
-     טבלת היוזרים שנגדיר בהמשך:
-     CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    profile_image_url VARCHAR(255) // יכול להיות נאל כי בהוספת יוזר חדש עדיין אין קישור בטבלה
-);
-
-
-     טבלת העוקבים-נעקבים:
-    CREATE TABLE follows (
-    follower_username VARCHAR(50) NOT NULL,
-    followed_username VARCHAR(50) NOT NULL,
-
-    PRIMARY KEY (follower_username, followed_username),
-
-    FOREIGN KEY (follower_username)
-        REFERENCES users(username)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (followed_username)
-        REFERENCES users(username)
-        ON DELETE CASCADE
-);
-
-
-שאילתא - מי עוקב אחרי יוזר מסוים:
-SELECT follower_username
-FROM follows
-WHERE followed_username = ?;
-
-
-
-שאילתא - מי היוזר המסויים עוקב אחריהם:
-SELECT followed_username
-FROM follows
-WHERE follower_username = ?;
-
-
-     */
 
     public List<String> getFollowing (String username, String password){ // תחזיר את רשימת האנשים שהיוזר עוקב אחריהם
         List<String> following = new ArrayList<>();
@@ -180,4 +134,77 @@ WHERE follower_username = ?;
         return followers;
     }
 
+
+
+
+    /*
+    צריך ליצור סכמה עם שם מתאים!
+    בסה״כ יהיו לנו 3 טבלאות - טבלת יוזרים, טבלת עוקבים-נעקבים וטבלת פוסטים של יוזרים
+
+     טבלת היוזרים שנגדיר בהמשך:
+     CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    profile_image_url VARCHAR(255) // יכול להיות נאל כי בהוספת יוזר חדש עדיין אין קישור בטבלה
+);
+
+     טבלת העוקבים-נעקבים:
+    CREATE TABLE follows (
+    follower_username VARCHAR(50) NOT NULL,
+    followed_username VARCHAR(50) NOT NULL,
+
+    PRIMARY KEY (follower_username, followed_username),
+
+    FOREIGN KEY (follower_username)
+        REFERENCES users(username)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (followed_username)
+        REFERENCES users(username)
+        ON DELETE CASCADE
+);
+
+בקשור לטבלת העוקבים - נעקבים:
+
+שאילתא - מי עוקב אחרי יוזר מסוים:
+SELECT follower_username
+FROM follows
+WHERE followed_username = ?;
+
+שאילתא - מי היוזר המסויים עוקב אחריהם:
+SELECT followed_username
+FROM follows
+WHERE follower_username = ?;
+
+
+
+טבלת הפוסטים:
+
+CREATE TABLE posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    author_username VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (author_username)
+        REFERENCES users(username)
+        ON DELETE CASCADE
+);
+
+
+
+   עוד מתודות שנצטרך להוסיף לכאן בהמשך:
+
+void updateUserProfileImage(String username, String imageUrl)
+
+void addFollow(String followerUsername, String followedUsername)
+
+List<Map<String, Object>> getPostsByAuthor(String username)
+
+Map<String, Object> createPost(String username, String content)
+
+List<Map<String, Object>> getFeedPosts(String username, int limit)
+
+     */
 }

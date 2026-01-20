@@ -1,7 +1,7 @@
 package org.example.project2_webdev_server.Entity;
 
 public class User {
-    private int id; // יהיה הpk בטבלת יוזרים ו-aouto incremented
+    private int id; // יהיה הpk בטבלת יוזרים ו-auto incremented אבל כרגע לא בשימוש בשום מקום
     private String username;
     private String password;
 
