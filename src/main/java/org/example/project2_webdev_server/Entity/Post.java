@@ -4,9 +4,11 @@ import java.security.Timestamp;
 
 public class Post {
     private int id;
-    private String author;
+    private String author; // username
     private String text;
     private Timestamp timeStamp;
+
+    public Post() {}
 
     public int getId() {
         return id;
@@ -24,18 +26,6 @@ public class Post {
         this.timeStamp = timeStamp;
     }
 
-    public Post() {
-    }
-
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
     public String getText() {
         return text;
     }
@@ -43,4 +33,8 @@ public class Post {
     public void setText(String text) {
         this.text = text;
     }
+
+    public String getAuthor() {return author;}
+
+    public void setAuthor(String author) {this.author = author;}
 }

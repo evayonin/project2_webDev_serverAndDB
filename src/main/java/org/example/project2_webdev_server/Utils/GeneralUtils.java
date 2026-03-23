@@ -3,9 +3,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class GeneralUtils {
-    public static void main(String[] args) {
-        System.out.println(hashPassword("1234" + "abc"));
-    }
     public static String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

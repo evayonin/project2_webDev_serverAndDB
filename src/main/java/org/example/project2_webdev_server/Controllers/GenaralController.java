@@ -27,12 +27,11 @@ public class GenaralController {
         Integer errorCode = ERROR_NO_ACCOUNT;
         if (user != null && user.getUsername() != null) { // נבדוק שהוכנס שפ משתמש
             if (!this.dbManager.checkIfUsernameExists(user.getUsername())) {
-                user.setPassword(GeneralUtils.hashPassword(user.getPassword()));//לא בטוחה אם צריך לעדכן בעמודת הסיסמה או בעמודת הסיסמה_האש
+                user.setPassword(GeneralUtils.hashPassword(user.getPassword()));// יופיע בעמודת הססמה בdb
             }
             if (this.dbManager.createUserOnDb(user)) {
                 success = true;
                 errorCode = null;
-
             }
         }
         return new BasicResponse(success, errorCode);
@@ -40,19 +39,29 @@ public class GenaralController {
     //שינויים: במחלקה של הגיבוב שיניתי שזה יגבב *רק* סיסמה, ושיניתי במתודת הרשמה שזה מקבל אובייקט ויוצר סיסמה מגובבת ומחזיר בייסיק רספונס. 18.03.2026
 
 
-    @PostMapping("/sign-in")//אני לא סיימתי, רוצה לחכות עד שאת תסתכלי על הכל
-    public LoginResponse signIn(@RequestBody User user) {
+    @PostMapping("/sign-in")
+    public BasicResponse signIn(@RequestBody User user) {
         boolean success = false;
         Integer errorCode = ERROR_NO_ACCOUNT;
-        String token = GeneralUtils.hashPassword(user.getUsername()+user.getPassword());//להתחברות
-        dbManager.updateUserToken(user.getUsername(), token); //צריך ליצור מתודה כזאת בDB?
-        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
-            if (this.dbManager.getUserByUsernameAndPassword(username, token)) {
-                success = true;
-                errorCode = null;
+        if (user != null) {
+            if(user.getUsername() == null || user.getUsername().trim().isEmpty()){
+                errorCode = ERROR_EMPTY_FIELD;
             }
+            else if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                errorCode = ERROR_EMPTY_FIELD;
+            }
+            // להתחברות
+            String token = GeneralUtils.hashPassword(user.getPassword()); // גיבוב הססמה בלבד
+            dbManager.updateUserToken(user.getUsername(), token);
+            if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+                if (this.dbManager.getUserByUsernameAndPassword(user.getUsername(), token)) {
+                    success = true;
+                    errorCode = null;
+                }
+            }
+            return new LoginResponse(success, errorCode, token);
         }
-        return new LoginResponse(success, errorCode, token);
+        return new BasicResponse(success, errorCode);
     }
 
 

@@ -14,7 +14,7 @@ import java.util.Map;
 public class DBManager {
     private static final String URL = "jdbc:mysql://localhost:3306/project2";   // אנה שימי לב! כשנגדיר את הדאטה בייס זה יהיה עם הפרטים האלה וחייב לקרוא לסכמה "project2"
     private static final String USERNAME = "root";
-    private static final String PASSWORD = ""; // אנה כשאת מריצה אצלך שימי 1234
+    private static final String PASSWORD = "1234"; // אנה כשאת מריצה אצלך שימי 1234
 
     private Connection connection;
 
@@ -178,6 +178,21 @@ public class DBManager {
         }
         return user;
     }
+
+    public boolean updateUserToken(String username, String token) {
+        boolean success = true;
+        String sql = "UPDATE users SET token = ? WHERE username = ?";
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, token);
+            preparedStatement.setString(2, username);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            success = false;
+            e.printStackTrace();
+        }
+        return success;
+    }
+
 
     public boolean followUser(String token, String targetUsername) {
         User user = getUserByToken(token);

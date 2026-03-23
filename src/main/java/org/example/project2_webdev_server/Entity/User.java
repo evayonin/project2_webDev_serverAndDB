@@ -7,8 +7,14 @@ public class User {
     private String imageURL;
     private int followers;
     private int following;
+    private String token;
 
-    public User () {
+
+    public User () {}
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     public int getFollowers() {
@@ -25,11 +31,6 @@ public class User {
 
     public void setFollowing(int following) {
         this.following = following;
-    }
-
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
     }
 
     public String getImageURL() {
@@ -63,4 +64,8 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getToken() {return token;}
+
+    public void setToken(String token) {this.token = token;}
 }
