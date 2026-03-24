@@ -100,7 +100,7 @@ public class DBManager {
 
 
 
-    public List<String> getFollowing (String username, String password){ // תחזיר את רשימת האנשים שהיוזר עוקב אחריהם
+    public List<String> getFollowing (String username){ // תחזיר את רשימת האנשים שהיוזר עוקב אחריהם
         List<String> following = new ArrayList<>();
         try {
             PreparedStatement preparedStatement =
@@ -119,7 +119,7 @@ public class DBManager {
         return following;
     }
 
-    public List<String> getFollowers (String username, String password){ // תחזיר את רשימת האנשים שעוקבים אחרי אותו יוזר מסוים
+    public List<String> getFollowers (String username){ // תחזיר את רשימת האנשים שעוקבים אחרי אותו יוזר מסוים
         List<String> followers = new ArrayList<>();
         try {
             PreparedStatement preparedStatement =

@@ -67,8 +67,25 @@ public class DashboardController {
         return new BasicResponse(true, null);
     }
 
+    @RequestMapping("/dashboard/followers")
+    public ObjectResponse getFollowers(@RequestHeader("Authorization") String token) { // העוקבים שלי
+        if (token == null || token.isEmpty()) {
+            return new ObjectResponse(false, ERROR_MISSING_INVALID_TOKEN, null);
+        }
+
+        User user = dbManager.getUserByToken(token);
+        if (user == null) {
+            return new ObjectResponse(false, ERROR_MISSING_INVALID_TOKEN, null);
+        }
+
+        List<String> followers = dbManager.getFollowers(user.getUsername());
+
+        return new ObjectResponse(true, null, followers);
+    }
+
+
     @RequestMapping("/dashboard/following")
-    public BasicResponse getFollowing(@RequestHeader("Authorization") String token) {
+    public BasicResponse getFollowing(@RequestHeader("Authorization") String token) { // הנעקבים שלי
         if (token == null || token.isEmpty()) {
             return new ObjectResponse(false, ERROR_MISSING_INVALID_TOKEN, null);
         }
