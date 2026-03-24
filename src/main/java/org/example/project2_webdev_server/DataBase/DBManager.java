@@ -28,6 +28,7 @@ public class DBManager {
         }
     }
 
+
     public boolean createUserOnDb (User user) { // להרשמה
         boolean success = true;
         try {
@@ -43,6 +44,7 @@ public class DBManager {
         }
         return success;
     }
+
 
     public User getUserByUsername (String username, String password) { // שיניתי שיהיה לפי שם משתמש ולא id - יותר פשוט. בשימוש בדשבורד קונטרולר
         try {
@@ -78,6 +80,7 @@ public class DBManager {
         }
     }
 
+
     public boolean getUserByUsernameAndPassword (String username, String password) { //להתחברות
         boolean success = false;
         try {
@@ -99,8 +102,10 @@ public class DBManager {
     }
 
 
+// לבדוק אם צריך לשנות את הטבלה והשאילתא
+// SELECT u.username FROM follows f JOIN users u ON f.follower_id = u.id  WHERE f.follower_id = ?
 
-    public List<String> getFollowing (String username){ // תחזיר את רשימת האנשים שהיוזר עוקב אחריהם
+    public List<String> getFollowing (String username){ // תחזיר את רשימת האנשים שהיוזר המחובר עוקב אחריהם
         List<String> following = new ArrayList<>();
         try {
             PreparedStatement preparedStatement =
@@ -119,7 +124,10 @@ public class DBManager {
         return following;
     }
 
-    public List<String> getFollowers (String username){ // תחזיר את רשימת האנשים שעוקבים אחרי אותו יוזר מסוים
+    // לבדוק אם צריך לשנות את הטבלה והשאילתא
+    // SELECT u.username FROM follows f JOIN users u ON f.follower_id = u.id WHERE f.followed_id = ?"
+
+    public List<String> getFollowers (String username){ // תחזיר את רשימת האנשים שעוקבים אחרי היוזר המחובר
         List<String> followers = new ArrayList<>();
         try {
             PreparedStatement preparedStatement =
@@ -138,34 +146,34 @@ public class DBManager {
         return followers;
     }
 
-    public boolean updateUserProfileImage(String token, String imageUrl) {//עדיף לשלוח טוקן, כך נמנע מכפל קוד ובדיקות מיותרות שאם המשתמש קיים וכו וכו
-        if(token == null || token.isEmpty() || imageUrl == null || imageUrl.isEmpty()) {
-            return false;
-        }
+
+    public boolean updateUserProfileImage(String username, String imageUrl) { // מתוקן - לא שולחים עם הטוקן!
+        boolean success = true;
+      // לא צריך את אותה בדיקה שכבר יש בקונטרולר כי הפרמטרים לא יכולים להיות ריקים
         try {
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement("UPDATE users " +
                             "SET profile_image_url = ? " +
-                            "WHERE token = ?");//תהיה עמודה של טוקן על כל משתמש
+                            "WHERE username = ?");
                     preparedStatement.setString(1,imageUrl);
-                    preparedStatement.setString(2,token);
-            int rowsUpdated = preparedStatement.executeUpdate();//בודק אם הצליח
-            return rowsUpdated ==1;//אם חזר 1, מצא שורה כזאת ועדכן
-    } catch (SQLException e) {
+                    preparedStatement.setString(2,username);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            success = false;
         }
+        return success;
     }
+
+
     public User getUserByToken (String token) {//מונע כל פעם בשדבורד קונטרולר לעשות כל פעם בדיקות אם המשתמש קיים וכו וכו, בדיקה קצרה - יש טוקן? ממשיכים. אין? נחזיר פולס
         if(token == null || token.isEmpty()) {
             return null;
         }
         User user = null;
         String sql = "SELECT * FROM users WHERE token = ?";
-
         try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
             statement.setString(1, token);
-
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     user = new User();
@@ -178,6 +186,7 @@ public class DBManager {
         }
         return user;
     }
+
 
     public boolean updateUserToken(String username, String token) {
         boolean success = true;
@@ -202,7 +211,6 @@ public class DBManager {
         try (PreparedStatement statement = this.connection.prepareStatement("INSERT INTO follows (follower_username, followed_username) VALUES (?, ?)")) {
             statement.setString(1, user.getUsername()); //אני העוקב
             statement.setString(2, targetUsername);    //הוא הנעקב
-
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -210,25 +218,109 @@ public class DBManager {
         }
     }
 
-   public Map<String, List<Post>> getPostsByAuthor(String username) throws SQLException {
-       Map<String, List<Post>> postsMap = new HashMap<>();
-       List<Post> userPosts = new ArrayList<>();
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT * FROM posts WHERE author_username = ?")) {
+
+    public List<Post> getPostsByAuthor(String username) throws SQLException { // תיקנתי שיחזיר מערך פוסטים שכל פוסט מכיל את השדות שלו, לא מפה
+        List<Post> posts = new ArrayList<>();
+        if (username == null || username.trim().isEmpty()) {
+            return posts;
+        }
+        String sql = "SELECT id, author, text, timestamp " +
+                "FROM posts " +
+                "WHERE author = ? " +
+                "ORDER BY created_at DESC";
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
             preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                Post post = new Post();
-                post.setId(resultSet.getInt("id"));
-                post.setAuthor(resultSet.getString("author_username"));
-                post.setText(resultSet.getString("text"));
-                userPosts.add(post);
-              }
-            postsMap.put(username, userPosts);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Post post = new Post();
+                    post.setId(rs.getInt("id"));
+                    post.setAuthor(rs.getString("author"));
+                    post.setText(rs.getString("text"));
+                    post.setTimeStamp(rs.getTimestamp("created_at"));
+                    posts.add(post);
+                }
+            }
+        }
+        return posts;
+    }
+
+
+    // המתודה שהוספתי:
+    public Post createPost(String username, String content) {
+        if (username == null || username.trim().isEmpty() ||
+                content == null || content.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "INSERT INTO posts (author_username, content) VALUES (?, ?)";
+        try (PreparedStatement ps = this.connection.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, content);
+
+            int affectedRows = ps.executeUpdate(); // בדיקה
+            if (affectedRows == 0) {
+                return null;
+            }
+
+            // מקבלים את ה- auto increment id שנוצר כדי לשמור אותו באובייקט של הפוסט:
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    int id = keys.getInt(1);
+
+                    Post post = new Post();
+                    post.setId(id);
+                    post.setAuthor(username.trim());
+                    post.setText(content.trim());
+                    post.setTimeStamp(new java.sql.Timestamp(System.currentTimeMillis())); // הגדרה ידנית של טיים סטאמפ לפי הרגע שנוסף הפוסט לטבלה
+                    return post;
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-       return postsMap;
-   }
+        return null;
+    }
+
+
+    // המתודה שהוספתי:
+    public List<Post> getFeedPosts(String username, int limit) {
+        List<Post> posts = new ArrayList<>();
+        if (username == null || username.trim().isEmpty()) {
+            return posts;
+        }
+        String sql =
+                "SELECT p.id, p.author_username, p.content, p.created_at " +
+                        "FROM posts p " +
+                        "JOIN followers f ON p.author_username = f.followed_username " +
+                        "WHERE f.follower_username = ? " +
+                        "ORDER BY p.created_at DESC " +
+                        "LIMIT ?";
+        try (PreparedStatement ps = this.connection.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setInt(2, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Post post = new Post();
+                    post.setId(rs.getInt("id"));
+                    post.setAuthor(rs.getString("author_username"));
+                    post.setText(rs.getString("content"));
+                    post.setTimeStamp(rs.getTimestamp("created_at"));
+                    posts.add(post);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return posts;
+    }
+
+
+
+
+
+    // צריך להוסיף מתודה של search users
+
+
 
 
 

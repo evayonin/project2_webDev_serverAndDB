@@ -1,6 +1,6 @@
 package org.example.project2_webdev_server.Entity;
 
-import java.security.Timestamp;
+import java.sql.Timestamp; // sql not security, so it can work w/ the DB!
 
 public class Post {
     private int id;

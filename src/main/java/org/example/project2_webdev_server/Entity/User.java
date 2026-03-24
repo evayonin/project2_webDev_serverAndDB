@@ -1,12 +1,14 @@
 package org.example.project2_webdev_server.Entity;
 
+import java.util.List;
+
 public class User {
     private int id; // יהיה הpk בטבלת יוזרים ו-auto incremented אבל כרגע לא בשימוש בשום מקום
     private String username;
     private String password;
     private String imageURL;
-    private int followers;
-    private int following;
+    private List<String> followers;
+    private List<String> following;
     private String token;
 
 
@@ -17,19 +19,19 @@ public class User {
         this.password = password;
     }
 
-    public int getFollowers() {
+    public List<String> getFollowers() {
         return followers;
     }
 
-    public void setFollowers(int followers) {
+    public void setFollowers(List<String> followers) {
         this.followers = followers;
     }
 
-    public int getFollowing() {
+    public List<String> getFollowing() {
         return following;
     }
 
-    public void setFollowing(int following) {
+    public void setFollowing(List<String> following) {
         this.following = following;
     }
 
@@ -68,4 +70,5 @@ public class User {
     public String getToken() {return token;}
 
     public void setToken(String token) {this.token = token;}
+
 }
