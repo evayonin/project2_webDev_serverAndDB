@@ -110,8 +110,8 @@ public class DBManager {
         try {
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement(
-                             "SELECT followed_username" +
-                                     "FROM follows" +
+                             "SELECT followed_username " +
+                                     "FROM followers " +
                                      "WHERE follower_username = ?;");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -132,8 +132,8 @@ public class DBManager {
         try {
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement(
-                            "SELECT follower_username" +
-                                    "FROM follows" +
+                            "SELECT follower_username " +
+                                    "FROM followers " +
                                     "WHERE followed_username = ?;");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -224,9 +224,9 @@ public class DBManager {
         if (username == null || username.trim().isEmpty()) {
             return posts;
         }
-        String sql = "SELECT id, author, text, timestamp " +
+        String sql = "SELECT id, author_username, content, created_at " +
                 "FROM posts " +
-                "WHERE author = ? " +
+                "WHERE author_username = ? " +
                 "ORDER BY created_at DESC";
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
             preparedStatement.setString(1, username);
