@@ -6,15 +6,16 @@ import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 @Component
 public class DBManager {
     private static final String URL = "jdbc:mysql://localhost:3306/project2";   // אנה שימי לב! כשנגדיר את הדאטה בייס זה יהיה עם הפרטים האלה וחייב לקרוא לסכמה "project2"
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "878982eva"; // לשנות לססמה שלי
+    private static final String PASSWORD = "1234"; // לשנות לססמה שלי
 
     private Connection connection;
 
@@ -43,26 +44,6 @@ public class DBManager {
             throw new RuntimeException(e);
         }
         return success;
-    }
-
-
-    public User getUserByUsername (String username, String password) { // שיניתי שיהיה לפי שם משתמש ולא id - יותר פשוט. בשימוש בדשבורד קונטרולר
-        try {
-            PreparedStatement preparedStatement = this.connection
-                    .prepareStatement("SELECT username " +
-                            "FROM users " +
-                            "WHERE username = ?");
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                User user = new User();
-                user.setUsername(resultSet.getString(1));
-                return user;
-            }
-        } catch (SQLException e) {
-
-        }
-        return null;
     }
 
 
@@ -101,9 +82,6 @@ public class DBManager {
         return success;
     }
 
-
-// לבדוק אם צריך לשנות את הטבלה והשאילתא
-// SELECT u.username FROM follows f JOIN users u ON f.follower_id = u.id  WHERE f.follower_id = ?
 
     public List<String> getFollowing (String username){ // תחזיר את רשימת האנשים שהיוזר המחובר עוקב אחריהם
         List<String> following = new ArrayList<>();
@@ -145,7 +123,7 @@ public class DBManager {
     }
 
 
-    public boolean updateUserProfileImage(String username, String imageUrl) { // מתוקן - לא שולחים עם הטוקן!
+    public boolean updateUserProfileImage(String username, String imageUrl) {
         boolean success = true;
       // לא צריך את אותה בדיקה שכבר יש בקונטרולר כי הפרמטרים לא יכולים להיות ריקים
         try {
@@ -164,7 +142,7 @@ public class DBManager {
     }
 
 
-    public User getUserByToken (String token) {//מונע כל פעם בשדבורד קונטרולר לעשות כל פעם בדיקות אם המשתמש קיים וכו וכו, בדיקה קצרה - יש טוקן? ממשיכים. אין? נחזיר פולס
+    public User getUserByToken (String token) {//מונע כל פעם בשדבורד קונטרולר לעשות כל פעם בדיקות אם המשתמש קיים ובשאר השאילתות לא צריך טוקן
         if(token == null || token.isEmpty()) {
             return null;
         }
@@ -230,7 +208,7 @@ public class DBManager {
     }
 
 
-    public List<Post> getPostsByAuthor(String username) throws SQLException { // תיקנתי שיחזיר מערך פוסטים שכל פוסט מכיל את השדות שלו, לא מפה
+    public List<Post> getPostsByAuthor(String username) { // מתוקן
         List<Post> posts = new ArrayList<>();
         if (username == null || username.trim().isEmpty()) {
             return posts;
@@ -239,18 +217,23 @@ public class DBManager {
                 "FROM posts " +
                 "WHERE author_username = ? " +
                 "ORDER BY created_at DESC";
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, username);
-            try (ResultSet rs = preparedStatement.executeQuery()) {
+
+        try (PreparedStatement ps = this.connection.prepareStatement(sql)) {
+            ps.setString(1, username.trim());
+
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Post post = new Post();
                     post.setId(rs.getInt("id"));
-                    post.setAuthor(rs.getString("author"));
-                    post.setText(rs.getString("text"));
+                    post.setAuthor(rs.getString("author_username"));
+                    post.setText(rs.getString("content"));
                     post.setTimeStamp(rs.getTimestamp("created_at"));
                     posts.add(post);
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
         return posts;
     }
@@ -297,9 +280,10 @@ public class DBManager {
             return posts;
         }
         String sql =
-                "SELECT p.id, p.author_username, p.content, p.created_at " +
+                "SELECT p.id, p.author_username, p.content, p.created_at, u.profile_image_url " +
                         "FROM posts p " +
                         "JOIN follows f ON p.author_username = f.followed_username " +
+                        "JOIN users u ON p.author_username = u.username " +
                         "WHERE f.follower_username = ? " +
                         "ORDER BY p.created_at DESC " +
                         "LIMIT ?";
@@ -313,6 +297,7 @@ public class DBManager {
                     post.setAuthor(rs.getString("author_username"));
                     post.setText(rs.getString("content"));
                     post.setTimeStamp(rs.getTimestamp("created_at"));
+                    post.setAuthorProfileImage(rs.getString("profile_image_url"));
                     posts.add(post);
                 }
             }

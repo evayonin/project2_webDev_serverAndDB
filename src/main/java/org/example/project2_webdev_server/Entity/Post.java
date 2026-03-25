@@ -7,6 +7,7 @@ public class Post {
     private String author; // username
     private String text;
     private Timestamp timeStamp;
+    private String authorProfileImage;
 
     public Post() {}
 
@@ -37,4 +38,12 @@ public class Post {
     public String getAuthor() {return author;}
 
     public void setAuthor(String author) {this.author = author;}
+
+    public String getAuthorProfileImage() {
+        return authorProfileImage;
+    }
+
+    public void setAuthorProfileImage(String authorProfileImage) {
+        this.authorProfileImage = authorProfileImage;
+    }
 }

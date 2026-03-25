@@ -50,11 +50,8 @@ public class DashboardController {
         );
         return new ObjectResponse(true, null, profile); // מחזיר אובייקט פרופיל בלי המידע הרגיש של היוזר
     }
-    //.///////////////////////////////////////////////////////
-    //. צריך לתקן במתודות הרלוונטיות כאן שלא יעבוד עם הטוקן במתודות שקורא להן מהדאטה בייס - המתודות בדיבי מנגר צריכות לעבוד עם יוזר איידי או יוזר ניים ולא עם טוקן! כבר עברנו אוטנתיקציה! אז גם הארור קוד לא מכונים! כי הטוקן כן תקין
-    // וצריך לצמצם את הכפל קוד ע״י  authenticateUser(token) בכל המתודות
 
-    @RequestMapping("/dashboard/profile-image") // מתוקן! לדטה בייס שולחים יחד עם השם משתמש ולא טוקן והודעת שגיאה מתאימה
+    @RequestMapping("/dashboard/profile-image")
     public BasicResponse updateProfileImage(
             @RequestHeader("Authorization") String token,
             @RequestParam String imageUrl
@@ -74,7 +71,7 @@ public class DashboardController {
     }
 
 
-    @RequestMapping("/dashboard/followers") // מתוקן - צימצמתי כפילויות אבל לבדוק דיבי מנג׳ר
+    @RequestMapping("/dashboard/followers")
     public BasicResponse getFollowers(@RequestHeader("Authorization") String token) { // העוקבים שלי
         User user = authenticateUser(token);
         if (user == null) {
@@ -86,7 +83,7 @@ public class DashboardController {
     }
 
 
-    @RequestMapping("/dashboard/following") // מתוקן - צימצמתי כפילויות אבל לבדוק דיבי מנג׳ר
+    @RequestMapping("/dashboard/following")
     public BasicResponse getFollowing(@RequestHeader("Authorization") String token) { // הנעקבים שלי
         User user = authenticateUser(token);
         if (user == null) {
@@ -98,7 +95,7 @@ public class DashboardController {
     }
 
 
-    @RequestMapping("/dashboard/follow")  // מסודר!
+    @RequestMapping("/dashboard/follow")
     public BasicResponse followUser(  // מעקב אחרי משתמש חדש
             @RequestHeader("Authorization") String token,
             @RequestParam String targetUsername
@@ -131,7 +128,7 @@ public class DashboardController {
     }
 
 
-    @RequestMapping("/dashboard/my-posts") // מתוקן - יחזיר מערך פוסטים ולא מפה! כל פוסט במערך מכיל את כל השדות שלו
+    @RequestMapping("/dashboard/my-posts")
     public BasicResponse getMyPosts(@RequestHeader("Authorization") String token) throws SQLException {
         User user = authenticateUser(token);
         if (user == null) {
@@ -174,18 +171,7 @@ public class DashboardController {
         return new ObjectResponse(true, null, feed);
     }
 
-    // כל מה שעד לפה תוקן כבר - גם בדיבי מנג׳ר
-// רק לבדוק שאילתות עוקבים ונעקבים
 
-
-
-    // צריך מתודה של get-all-users?
-    // כנראה שלא כי נראלי שנשאיר שאם היוזר לא הכניס כלום בחיפוש יוזרים אז לא יציג כלום כלומר לא צריך שאילתא שתביא כל כל המשתמשים באפליקציה
-    // רק אחרי שמכניס תו כלשהו לחיפוש אז מחפש בדרופ דאון אז פשוט נכתוב מתודה אחת של חיפוש יוזרים
-    //
-
-
-    // צריך להוסיף בדיבי מנג׳ר
     @RequestMapping("/dashboard/search-users") // תחזור רשימת שמות המשתמשים הרלוונטים למה שהוכנס חיפוש
     public BasicResponse searchUsers(
             @RequestHeader("Authorization") String token,
