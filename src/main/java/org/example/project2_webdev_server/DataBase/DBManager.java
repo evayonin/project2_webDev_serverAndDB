@@ -14,7 +14,7 @@ import java.util.Map;
 public class DBManager {
     private static final String URL = "jdbc:mysql://localhost:3306/project2";   // אנה שימי לב! כשנגדיר את הדאטה בייס זה יהיה עם הפרטים האלה וחייב לקרוא לסכמה "project2"
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "1234"; // אנה כשאת מריצה אצלך שימי 1234
+    private static final String PASSWORD = "878982eva"; // אנה כשאת מריצה אצלך שימי 1234
 
     private Connection connection;
 
@@ -88,7 +88,7 @@ public class DBManager {
                     this.connection.prepareStatement(
                             "SELECT username, password FROM users " +
                                     "WHERE username = ? " +
-                                    "AND password_hash = ?");//תהיה עוד עמודה של סיסמה, ועמודה של סיסמה_האש כדי שלא יגש לשם
+                                    "AND password = ?");
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, password); // נשמר מה שמגובב ששולחים מהמתודה עם הנתיב בקונטרולר
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -110,8 +110,8 @@ public class DBManager {
         try {
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement(
-                             "SELECT followed_username" +
-                                     "FROM follows" +
+                             "SELECT followed_username " +
+                                     "FROM followers " +
                                      "WHERE follower_username = ?;");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -132,8 +132,8 @@ public class DBManager {
         try {
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement(
-                            "SELECT follower_username" +
-                                    "FROM follows" +
+                            "SELECT follower_username " +
+                                    "FROM followers " +
                                     "WHERE followed_username = ?;");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -224,9 +224,9 @@ public class DBManager {
         if (username == null || username.trim().isEmpty()) {
             return posts;
         }
-        String sql = "SELECT id, author, text, timestamp " +
+        String sql = "SELECT id, author_username, content, created_at " +
                 "FROM posts " +
-                "WHERE author = ? " +
+                "WHERE author_username = ? " +
                 "ORDER BY created_at DESC";
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
             preparedStatement.setString(1, username);
@@ -346,42 +346,39 @@ public class DBManager {
     /*
     בסה״כ יהיו לנו 3 טבלאות - טבלת יוזרים, טבלת עוקבים-נעקבים וטבלת פוסטים של יוזרים
 
-     טבלת היוזרים שנגדיר בהמשך:
-     CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    profile_image_url VARCHAR(255), // יכול להיות נאל כי בהוספת יוזר חדש עדיין אין קישור בטבלה
+CREATE TABLE users
+(
+    id                INT AUTO_INCREMENT PRIMARY KEY,
+    username          VARCHAR(50) UNIQUE NOT NULL,
+    password          VARCHAR(100)       NOT NULL,
+    profile_image_url VARCHAR(255),
     token VARCHAR(255)
 );
 
-     טבלת העוקבים-נעקבים:
-    CREATE TABLE follows (
-    follower_username VARCHAR(50) NOT NULL,
-    followed_username VARCHAR(50) NOT NULL,
+CREATE TABLE follows (
+                         follower_username VARCHAR(50) NOT NULL,
+                         followed_username VARCHAR(50) NOT NULL,
 
-    PRIMARY KEY (follower_username, followed_username),
+                         PRIMARY KEY (follower_username, followed_username),
 
-    FOREIGN KEY (follower_username)
-        REFERENCES users(username)
-        ON DELETE CASCADE,
+                         FOREIGN KEY (follower_username)
+                             REFERENCES users(username)
+                             ON DELETE CASCADE,
 
-    FOREIGN KEY (followed_username)
-        REFERENCES users(username)
-        ON DELETE CASCADE
+                         FOREIGN KEY (followed_username)
+                             REFERENCES users(username)
+                             ON DELETE CASCADE
 );
 
-טבלת הפוסטים:
-
 CREATE TABLE posts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    author_username VARCHAR(50) NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                       id INT AUTO_INCREMENT PRIMARY KEY,
+                       author_username VARCHAR(50) NOT NULL,
+                       content TEXT NOT NULL,
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (author_username)
-        REFERENCES users(username)
-        ON DELETE CASCADE
+                       FOREIGN KEY (author_username)
+                           REFERENCES users(username)
+                           ON DELETE CASCADE
 );
 
      */
