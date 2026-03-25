@@ -10,11 +10,10 @@ public class Errors {
     public static final int ERROR_MISSING_POST_CONTENT = 3007;
     public static final int ERROR_MISSING_INVALID_TOKEN = 3008;
     public static final int ERROR_UPDATE_TOKEN_FAILED = 3009;
-
-// לשימוש אחרי תיקון הדשבורד קונטרולר ודיבי מנג׳ר:
     public static final int ERROR_UPDATE_PROFILE_IMAGE_FAILED = 3010;
     public static final int ERROR_FOLLOW_FAILED = 3011;
     public static final int ERROR_CREATE_POST_FAILED = 3012;
-    public static final int ERROR_FEED_LOAD_FAILED = 3013;
-
+    public static final int ERROR_UNFOLLOW_FAILED = 3013;
+    public static final int ERROR_CANNOT_UNFOLLOW_YOURSELF = 3014;
+    public static final int ERROR_NOT_FOLLOWING = 3015;
 }

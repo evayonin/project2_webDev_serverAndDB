@@ -128,6 +128,36 @@ public class DashboardController {
     }
 
 
+    @RequestMapping("/dashboard/unfollow")
+    public BasicResponse unfollowUser(
+            @RequestHeader("Authorization") String token,
+            @RequestParam String targetUsername
+    ) {
+        User user = authenticateUser(token);
+        if (user == null) {
+            return new BasicResponse(false, ERROR_MISSING_INVALID_TOKEN);
+        }
+
+        if (targetUsername == null || targetUsername.trim().isEmpty()) {
+            return new BasicResponse(false, ERROR_MISSING_USERNAME);
+        }
+        targetUsername = targetUsername.trim();
+
+        if (user.getUsername().equals(targetUsername)) {
+            return new BasicResponse(false, ERROR_CANNOT_UNFOLLOW_YOURSELF);
+        }
+        if (!dbManager.isFollowing(user.getUsername(), targetUsername)) {
+            return new BasicResponse(false, ERROR_NOT_FOLLOWING);
+        }
+        boolean success = dbManager.unfollowUser(user.getUsername(), targetUsername);
+        if (!success) {
+            return new BasicResponse(false, ERROR_UNFOLLOW_FAILED);
+        }
+
+        return new BasicResponse(true, null);
+    }
+
+
     @RequestMapping("/dashboard/my-posts")
     public BasicResponse getMyPosts(@RequestHeader("Authorization") String token) throws SQLException {
         User user = authenticateUser(token);

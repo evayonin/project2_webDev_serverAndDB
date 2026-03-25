@@ -207,6 +207,44 @@ public class DBManager {
         }
     }
 
+    // בשביל unfollow:
+    // צריך אותה אם יהיה toggle בכפתור follow (אבל אפשר לעשות יותר קל ופשוט לעשות שהיוזר יכול להוריד עוקב מהרשימת following של הפרופיל ואז בוודאות עוקב אחריו ואז לא צריך לשנות את מה ש searchUsers מחזירה) אבל נשאר כשכבת הגנה
+    public boolean isFollowing(String followerUsername, String followedUsername) {
+        if (followerUsername == null || followerUsername.trim().isEmpty() ||
+                followedUsername == null || followedUsername.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "SELECT 1 FROM follows WHERE follower_username = ? AND followed_username = ?";
+        try (PreparedStatement ps = this.connection.prepareStatement(sql)) {
+            ps.setString(1, followerUsername.trim());
+            ps.setString(2, followedUsername.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public boolean unfollowUser(String followerUsername, String followedUsername) {
+        if (followerUsername == null || followerUsername.trim().isEmpty() ||
+                followedUsername == null || followedUsername.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "DELETE FROM follows WHERE follower_username = ? AND followed_username = ?";
+        try (PreparedStatement ps = this.connection.prepareStatement(sql)) {
+            ps.setString(1, followerUsername.trim());
+            ps.setString(2, followedUsername.trim());
+            int rowsDeleted = ps.executeUpdate();
+            return rowsDeleted == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     public List<Post> getPostsByAuthor(String username) { // מתוקן
         List<Post> posts = new ArrayList<>();
