@@ -28,10 +28,10 @@ public class GenaralController {
         if (user != null && user.getUsername() != null) { // נבדוק שהוכנס שפ משתמש
             if (!this.dbManager.checkIfUsernameExists(user.getUsername())) {
                 user.setPassword(GeneralUtils.hashPassword(user.getPassword()));// יופיע בעמודת הססמה בdb
-            }
-            if (this.dbManager.createUserOnDb(user)) {
-                success = true;
-                errorCode = null;
+                if (this.dbManager.createUserOnDb(user)) {
+                    success = true;
+                    errorCode = null;
+                }
             }
         }
         return new BasicResponse(success, errorCode);

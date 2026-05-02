@@ -93,7 +93,7 @@ public class DBManager {
                                      "WHERE follower_username = ?;");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()){
+            while (resultSet.next()){
                 following.add(resultSet.getString("followed_username"));
             }
         } catch (SQLException e) {
@@ -113,7 +113,7 @@ public class DBManager {
                                     "WHERE followed_username = ?;");
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()){
+            while (resultSet.next()){
                 followers.add(resultSet.getString("follower_username"));
             }
         } catch (SQLException e) {
@@ -147,12 +147,13 @@ public class DBManager {
             return null;
         }
         User user = null;
-        String sql = "SELECT * FROM users WHERE token = ?";
+        String sql = "SELECT id, username, profile_image_url FROM users WHERE token = ?";
         try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
             statement.setString(1, token);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     user = new User();
+                    user.setId(resultSet.getInt("id"));
                     user.setUsername(resultSet.getString("username"));
                     user.setImageURL(resultSet.getString("profile_image_url"));
                 }
